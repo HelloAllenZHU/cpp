@@ -56,8 +56,8 @@ int main()
 {
     cout << "Hello World!" << endl;
 
-    A *b = new B();
-    b->dosomething();
+    A *a = new B();
+    a->dosomething();
 
     C *c = new D();
     c->dosomething();
