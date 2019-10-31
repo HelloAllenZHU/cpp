@@ -21,7 +21,8 @@ void test0() {
     delete p;
 }
 
-//std::auto_ptr
+//std::auto_ptr: 会发生所有权转让，再次使用原指针会报错，运行时才报错
+//auto_ptr只能与new一起使用，不能与new[]一起使用（share_ptr同样）
 void test1() {
     std::auto_ptr<int> p( new int() );
     *p.get() = 1;  //p.get() 将返回原始指针
@@ -33,12 +34,13 @@ void test1() {
     std::cout << "test1:" << *p.get() << std::endl;
 }
 
-//std::unique_ptr
+//std::unique_ptr: 会发生所有权转让，再次使用原指针会报错，编译时才报错
+//unique_ptr可以使用new，也可以使用new[]
 void test2() {
     std::unique_ptr<int> p( new int() );
     *p.get() = 2;  //p.get() 将返回原始指针
 
-    /* 将p的所有权转让给p1，由于unique_ptr策略严格，将直接报错，
+    /* 将p的所有权转让给p1，由于unique_ptr策略严格，编译时将直接报错，
      * 不会等到运行时再去报错，这样就避免了低级、潜在的bug
      */
     //std::unique_ptr<int> p1 = p;              //此处直接报错
