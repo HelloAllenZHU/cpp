@@ -21,7 +21,9 @@ int main()
     //使用外部变量
     int x = 1;  //按值捕获
     int y = 2;  //按引用捕获
-    auto f = [ x, &y ] ( int a, int b ) mutable -> int  {
+    auto f = [ x, &y ] ( int a, int b ) mutable -> int  {           //[]里面表示要应用的外部变量
+                                                                    //()里面表示要传递进来的参数
+                                                                    //int表示返回值(编译器一般可自动推导)
                                                                     //-> int可省略
                                                             x++;    //除非使用mutable关键字，否则此行报错
                                                             y++;    //y可读可写
@@ -33,7 +35,7 @@ int main()
 
     //没有排序因子
     std::sort( v_test.begin(), v_test.end() );
-    for ( auto item: v_test ) {
+    for ( auto item : v_test ) {
         std::cout << item << std::endl;
     }
     std::cout << std::endl;
