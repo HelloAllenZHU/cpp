@@ -1,135 +1,71 @@
 /*
- * C++ 11 多线程
- * 创建/销毁线程、传递参数/获取结果、线程同步/互斥
- *
+ * C++ 11 多线程示例代码
  */
 
 #include <iostream>
 #include <thread>
 #include <mutex>
+#include <future>
+#include <string>
 
-using namespace std;
+int         count = 0;
+std::mutex  mutex;
 
 //**********************************************创建线程
-
-//**********************************************传递参数(未完成)
-/*
- * 例子1：传递参数给子线程
- */
-/*
-int         p = 0;
-std::mutex  mtx;
-
-//线程函数
-void t_cb() {
-    while ( true ) {
-        //加锁
-        mtx.lock();
-
-        if ( p >= 100 )
-            break;
-        else
-            std::cout << ++p << std::endl;
-
-        //解锁
-        mtx.unlock();
-    }
-}
-
-//线程函数
-void t_cb2() {
-    while ( true ) {
-        //定义lock变量时自动加锁，lock变量的生命周期结束时自动解锁
-        std::lock_guard<std::mutex> lock( mtx );
-
-        if ( p >= 100 )
-            break;
-        else
-            std::cout << ++p << std::endl;
-    }
-}
-
-int main()
+void FuncCreate()
 {
-    std::thread t0( t_cb );
-    std::thread t1( t_cb );
+    // 子线程函数
+    auto callback = []( std::string name ) {
+        std::cout << "Hello " << name << std::endl;
+    };
 
-    t0.join();
-    t1.join();
+    // 创建子线程
+    std::thread thread0( callback, "Allen" );
+    std::thread thread1( callback, "Lucy" );
 
-    cout << "Hello World!: " << p << endl;
-    return 0;
-}*/
-
-//**********************************************线程同步:互斥
-/*
- * 例子1：使用std::mutex实现线程同步
- */
-/*
-int         p = 0;
-std::mutex  mtx;
-
-//线程函数
-void t_cb() {
-    while ( true ) {
-        //加锁
-        mtx.lock();
-
-        if ( p >= 100 )
-            break;
-        else
-            std::cout << ++p << std::endl;
-
-        //解锁
-        mtx.unlock();
-    }
+    // 此处会阻塞等待子线程退出
+    thread0.join();
+    thread1.join();
 }
 
-int main()
+//**********************************************线程互斥
+void FuncMutex()
 {
-    std::thread t0( t_cb );
-    std::thread t1( t_cb );
+    auto callback0 = []() {
+        while ( true ) {
+            // 手动加锁
+            mutex.lock();
 
-    t0.join();
-    t1.join();
+            if ( count >= 100 )
+                break;
+            else
+                std::cout << ++count << std::endl;
 
-    cout << "Hello World!: " << p << endl;
-    return 0;
-}*/
+            // 手动解锁
+            mutex.unlock();
+        }
+    };
 
+    auto callback1 = []() {
+        while ( true ) {
+            // 定义lock变量时自动加锁，lock变量的生命周期结束时自动解锁
+            std::lock_guard<std::mutex> lock( mutex );
 
-/*
- * 例子2：使用std::lock_guard实现线程同步
- */
-/*
-int         p = 0;
-std::mutex  mtx;
+            if ( count >= 100 )
+                break;
+            else
+                std::cout << ++count << std::endl;
+        }
+    };
 
-//线程函数
-void t_cb() {
-    while ( true ) {
-        //使用std::lock_guard，以避免忘记调用std::lock.unlock，在lg的生命周期结束的时候，会在析构函数里面调用std::lock.unlock
-        std::lock_guard<std::mutex> lg( mtx );
+    std::thread thread0( callback0 );
+    std::thread thread1( callback1 );
 
-        if ( p >= 100 )
-            break;
-        else
-            std::cout << ++p << std::endl;
-    }
+    thread0.join();
+    thread1.join();
+
+    std::cout << count << std::endl;
 }
-
-int main()
-{
-    std::thread t0( t_cb );
-    std::thread t1( t_cb );
-
-    t0.join();
-    t1.join();
-
-    cout << "Hello World!: " << p << endl;
-    return 0;
-}
-*/
 
 //**********************************************线程同步:生产者/消费者(未完成)
 /*
@@ -173,39 +109,32 @@ int main()
 
 //**********************************************std::promise/std::future异步操作
 /*
- * 例子：使用std::promise执行异步操作
+ * 使用std::promise执行异步操作
  * 并且使用std::future接收返回值
  */
-
-/*
-#include <future>
-
-void func_cb( std::promise<std::string> pms, int n )
+void func_cb( std::promise<std::string> promise, int n )
 {
     std::this_thread::sleep_for( std::chrono::milliseconds( 3000 ) );
-    pms.set_value( "abc" + std::to_string( n ) );
+    promise.set_value( "abc" + std::to_string( n ) );
 }
 
-int main( int argc, char **argv )
+void FuncAsync()
 {
-    std::cout << "Hello world!" << std::endl;
+    std::promise<std::string>   promise;
+    std::future<std::string>    fr_res = promise.get_future();
 
-    std::promise<std::string> pms;
-    std::future<std::string> fr_res = pms.get_future();
-
-    std::thread t( func_cb, std::move( pms ), 360 );
+    std::thread thread0( func_cb, std::move( promise ), 360 );
     //或lambda函数
-    std::thread t2( []( std::promise<std::string> *p_pms, int n ){
+    std::thread thread1( []( std::promise<std::string> *promise, int n ){
         std::this_thread::sleep_for( std::chrono::milliseconds( 3000 ) );
-        p_pms->set_value( "abc" + std::to_string( n ) );
-    }, &pms, 360 );
+        promise->set_value( "abc" + std::to_string( n ) );
+    }, &promise, 360 );
 
     std::string res = fr_res.get();
     std::cout << "res: " << res << std::endl;
-    t.join();
-    return 0;
-}*/
-
+    thread0.join();
+    thread1.join();
+}
 
 //**********************************************std::async/std::future异步操作
 /*
@@ -245,7 +174,7 @@ int main( int argc, char **argv )
  * 并且使用std::future接收返回值
  */
 
-///*
+/*
 #include <future>
 #include <functional>
 
@@ -285,7 +214,7 @@ int main( int argc, char **argv )
     //获取结果
     std::cout << "res2: " << fre2.get() << std::endl;
     return 0;
-}//*/
+}*/
 
 //**********************************************读写锁
 /*
