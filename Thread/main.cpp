@@ -36,6 +36,19 @@ void t_cb() {
     }
 }
 
+//线程函数
+void t_cb2() {
+    while ( true ) {
+        //定义lock变量时自动加锁，lock变量的生命周期结束时自动解锁
+        std::lock_guard<std::mutex> lock( mtx );
+
+        if ( p >= 100 )
+            break;
+        else
+            std::cout << ++p << std::endl;
+    }
+}
+
 int main()
 {
     std::thread t0( t_cb );
