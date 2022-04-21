@@ -1,4 +1,4 @@
-/*
+﻿/*
  * C++ 11 多线程示例代码
  */
 
@@ -67,45 +67,7 @@ void FuncMutex()
     std::cout << count << std::endl;
 }
 
-//**********************************************线程同步:生产者/消费者(未完成)
-/*
- * 例子：使用std::mutex实现线程同步
- */
-
-/*
-#include <condition_variable>
-
-int         p = 0;
-std::mutex  mtx;
-
-//线程函数
-void t_cb() {
-    while ( true ) {
-        //加锁
-        mtx.lock();
-
-        if ( p >= 100 )
-            break;
-        else
-            std::cout << ++p << std::endl;
-
-        //解锁
-        mtx.unlock();
-    }
-}
-
-int main()
-{
-    std::thread t0( t_cb );
-    std::thread t1( t_cb );
-
-    t0.join();
-    t1.join();
-
-    cout << "Hello World!: " << p << endl;
-    return 0;
-}*/
-
+//**********************************************线程同步:生产者/消费者
 
 //**********************************************std::promise/std::future异步操作
 /*
