@@ -7,65 +7,8 @@
 #include <mutex>
 #include <future>
 #include <string>
-
-int         count = 0;
-std::mutex  mutex;
-
-//**********************************************创建线程
-void FuncCreate()
-{
-    // 子线程函数
-    auto callback = []( std::string name ) {
-        std::cout << "Hello " << name << std::endl;
-    };
-
-    // 创建子线程
-    std::thread thread0( callback, "Allen" );
-    std::thread thread1( callback, "Lucy" );
-
-    // 此处会阻塞等待子线程退出
-    thread0.join();
-    thread1.join();
-}
-
-//**********************************************线程互斥
-void FuncMutex()
-{
-    auto callback0 = []() {
-        while ( true ) {
-            // 手动加锁
-            mutex.lock();
-
-            if ( count >= 100 )
-                break;
-            else
-                std::cout << ++count << std::endl;
-
-            // 手动解锁
-            mutex.unlock();
-        }
-    };
-
-    auto callback1 = []() {
-        while ( true ) {
-            // 定义lock变量时自动加锁，lock变量的生命周期结束时自动解锁
-            std::lock_guard<std::mutex> lock( mutex );
-
-            if ( count >= 100 )
-                break;
-            else
-                std::cout << ++count << std::endl;
-        }
-    };
-
-    std::thread thread0( callback0 );
-    std::thread thread1( callback1 );
-
-    thread0.join();
-    thread1.join();
-
-    std::cout << count << std::endl;
-}
+#include "Create.h"
+#include "Condition.h"
 
 //**********************************************线程同步:生产者/消费者
 
@@ -184,3 +127,12 @@ int main( int argc, char **argv )
  * std::unique_lock
  */
 
+
+int main(int argc, char *argv[])
+{
+    // 创建线程(含互斥)
+    Create();
+
+    // 条件变量
+    Condition();
+}
